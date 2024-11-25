@@ -1,4 +1,12 @@
-import { engineInit, EngineObject, keyIsDown, vec2 } from "littlejsengine";
+import {
+  engineInit,
+  EngineObject,
+  keyIsDown,
+  keyWasPressed,
+  setGravity,
+  Timer,
+  vec2,
+} from "littlejsengine";
 import { Key, Door, Enemy } from "./gameObjects";
 
 /**
@@ -11,15 +19,52 @@ class Player extends EngineObject {
     this.setCollision();
     this.speed = speed;
     this.life = 4;
+
+    this.time = new Timer();
+    this.time.set(0);
+    this.oldTime = 0;
+    this.deltaTime = 0;
+
+    this.jumpTimer = 0;
+    this.maxJumpTimer = 0.1;
+    this.isJumping = false;
+    this.jumpForce = 5;
   }
 
   update() {
     super.update();
+    //Delta time
+    this.deltaTime = this.time.get() - this.oldTime;
+    this.oldTime = this.time.get();
+
     const moveX = keyIsDown("KeyD") - keyIsDown("KeyA");
-    this.velocity.x = moveX * this.speed;
+    this.velocity.x = moveX * this.speed * this.deltaTime;
+
+    console.log(this.deltaTime);
+
+    // Salto
+    if (keyIsDown("Space")) {
+      if (!this.isJumping) {
+        this.isJumping = true;
+        this.jumpTimer = 0;
+      }
+
+      if (this.jumpTimer < this.maxJumpTimer) {
+        this.jumpTimer += this.deltaTime;
+        this.velocity.y = this.jumpForce;
+      }
+    } else {
+      this.isJumping = false;
+    }
 
     this.kill();
   }
+
+  // collideWhithObject(o) {
+  //   super.collideWithObject();
+  //   // console.log(o);
+  //   console.log("Hola");
+  // }
 
   kill() {
     if (this.life <= 0) {
@@ -29,15 +74,37 @@ class Player extends EngineObject {
 
   getDamage(damage) {
     this.life -= damage;
-    console.log(this.life);
   }
 }
+/**
+ * //////////////////////////////////////
+ */
+
+/**
+ * Suelo Temporal
+ */
+class floor extends EngineObject {
+  constructor(pos, size) {
+    super(pos, size);
+
+    this.setCollision();
+    this.mass = 0;
+    this.gravityScale = 0;
+  }
+}
+/**
+ * ///////////////////////////
+ */
 
 function gameInit() {
-  const player = new Player(vec2(-4, 0), 0.1);
-  const key1 = new Key(vec2(1, 0), player);
+  setGravity(-0.3);
+  const player = new Player(vec2(-4, 0), 5);
+  const key1 = new Key(vec2((Math.random() - 0.5) * 2, 0), player);
   new Door(vec2(2, 0), key1);
   new Enemy(vec2(4, 0), player);
+
+  //Suelo temporal
+  new floor(vec2(0, -2), vec2(100, 1));
 }
 
 function gameUpdate() {

@@ -10,6 +10,7 @@ export class Key extends EngineObject {
 
     this.player = player;
     this.mass = 0;
+    this.gravityScale = 0;
 
     this.time = new Timer();
     this.time.set(0);
@@ -42,8 +43,9 @@ export class Door extends EngineObject {
   constructor(pos, key) {
     super(pos, vec2(1));
 
-    this.setCollision(true, true);
+    this.setCollision();
     this.mass = 0;
+    this.gravityScale = 0;
     this.key = key;
   }
 
@@ -109,17 +111,16 @@ export class Enemy extends EngineObject {
       // Si el jugador está fuera de rango, detener al enemigo
       this.velocity.x = 0;
       this.velocity.y = 0;
-      console.log("El jugador está fuera de rango");
     }
   }
 
   attack() {
-    if (this.time.get() > 3) {
+    if (this.time.get() > 1.5) {
       this.time.set(0);
       this.player.getDamage(this.damage);
     }
   }
 }
 /**
- *
+ * /////////////////////////////////////////////////
  */
