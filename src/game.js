@@ -2,19 +2,20 @@ import {
   engineInit,
   EngineObject,
   keyIsDown,
-  keyWasPressed,
-  setGravity,
   Timer,
   vec2,
+  tile,
+  setCameraPos,
 } from "littlejsengine";
-import { Key, Door, Enemy } from "./gameObjects";
+
+import { buildLevel } from "./gameLevel";
 
 /**
  * Player Test
  */
-class Player extends EngineObject {
+export class Player extends EngineObject {
   constructor(pos, speed) {
-    super(pos, vec2(1));
+    super(pos, vec2(1), tile(2, 32, 0));
 
     this.setCollision();
     this.speed = speed;
@@ -40,8 +41,6 @@ class Player extends EngineObject {
     const moveX = keyIsDown("KeyD") - keyIsDown("KeyA");
     this.velocity.x = moveX * this.speed * this.deltaTime;
 
-    console.log(this.deltaTime);
-
     // Salto
     if (keyIsDown("Space")) {
       if (!this.isJumping) {
@@ -56,15 +55,14 @@ class Player extends EngineObject {
     } else {
       this.isJumping = false;
     }
-
     this.kill();
-  }
 
-  // collideWhithObject(o) {
-  //   super.collideWithObject();
-  //   // console.log(o);
-  //   console.log("Hola");
-  // }
+    /**
+     * Camera Position
+     */
+
+    setCameraPos(this.pos);
+  }
 
   kill() {
     if (this.life <= 0) {
@@ -97,14 +95,7 @@ class floor extends EngineObject {
  */
 
 function gameInit() {
-  setGravity(-0.3);
-  const player = new Player(vec2(-4, 0), 5);
-  const key1 = new Key(vec2((Math.random() - 0.5) * 2, 0), player);
-  new Door(vec2(2, 0), key1);
-  new Enemy(vec2(4, 0), player);
-
-  //Suelo temporal
-  new floor(vec2(0, -2), vec2(100, 1));
+  buildLevel();
 }
 
 function gameUpdate() {
@@ -128,4 +119,7 @@ function gameRenderPost() {
 }
 
 // Startup LittleJS Engine
-engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost);
+engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost, [
+  "RobotDoors.png",
+  "RobotTiles1.png",
+]);

@@ -1,32 +1,35 @@
 // import { InteractableObjects } from "./InteractableObjects";
-import { vec2, EngineObject, Timer } from "littlejsengine";
+import { vec2, EngineObject, Timer, tile } from "littlejsengine";
 
 /**
  * Key
  */
 export class Key extends EngineObject {
-  constructor(pos, player) {
-    super(pos, vec2(0.5));
+  constructor(pos, player, id, tileid) {
+    super(pos, vec2(1), tile(tileid, 32, 0));
 
     this.player = player;
     this.mass = 0;
     this.gravityScale = 0;
+    this.setCollision(false, false);
 
     this.time = new Timer();
     this.time.set(0);
     this.getKey = false;
+    this.id = id;
   }
 
   update() {
     if (!this.player) {
       console.log("No hay nada");
     }
+
     // Animacion simple
-    this.pos.y = Math.sin(this.time.get() * 3) / 4;
+    this.pos.y += Math.sin(this.time.get() * 5) * 0.02;
 
     // verificar distancia
     const d = this.pos.distanceSquared(this.player.pos);
-    if (d < 0.35) {
+    if (d < 0.2) {
       this.getKey = true;
       this.destroy();
     }
@@ -40,18 +43,20 @@ export class Key extends EngineObject {
  * Door
  */
 export class Door extends EngineObject {
-  constructor(pos, key) {
-    super(pos, vec2(1));
+  constructor(pos, key, id) {
+    super(pos, vec2(1), tile(3, 32, 0));
 
     this.setCollision();
     this.mass = 0;
     this.gravityScale = 0;
     this.key = key;
+    this.id = id;
   }
 
   update() {
     super.update();
-    if (this.key.getKey) {
+    if (this.key.getKey && this.key.id === this.id) {
+      console.log("Se elimino la puerta");
       this.destroy();
     }
   }
