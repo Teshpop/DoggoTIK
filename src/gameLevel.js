@@ -26,6 +26,10 @@ const loadLevel = () => {
 
   player = new Player(vec2(1, 4), 5);
 
+  /**
+   * Add Objects
+   */
+
   const objectsCount = tileMapData.layers[3].objects;
 
   objectsCount.map((objects) => {
@@ -45,7 +49,9 @@ const loadLevel = () => {
     }
   });
 
-  // Procesar capas del mapa (colisiones y tiles)
+  /**
+   * Add Map
+   */
   const layerCounts = tileMapData.layers.length;
   for (let layer = layerCounts; layer--; ) {
     if (layer !== 3) {
