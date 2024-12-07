@@ -29,7 +29,7 @@ export class Key extends EngineObject {
 
     // verificar distancia
     const d = this.pos.distanceSquared(this.player.pos);
-    if (d < 0.2) {
+    if (d < 0.3) {
       this.getKey = true;
       this.destroy();
     }
