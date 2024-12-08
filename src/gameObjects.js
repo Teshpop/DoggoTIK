@@ -1,11 +1,20 @@
 // import { InteractableObjects } from "./InteractableObjects";
-import { vec2, EngineObject, Timer, tile } from "littlejsengine";
+import {
+  vec2,
+  EngineObject,
+  Timer,
+  tile,
+  SoundWave,
+  ParticleEmitter,
+  rgb,
+  randColor,
+} from "littlejsengine";
 
 /**
  * Key
  */
 export class Key extends EngineObject {
-  constructor(pos, player, id, tileid) {
+  constructor(pos, player, idObject, tileid) {
     super(pos, vec2(1), tile(tileid, 32, 0));
 
     this.player = player;
@@ -16,14 +25,15 @@ export class Key extends EngineObject {
     this.time = new Timer();
     this.time.set(0);
     this.getKey = false;
-    this.id = id;
+    this.id = idObject;
+    this.sound = new SoundWave("/Audio/test_Sound.wav");
+    this.sound.setVolume(1);
   }
 
   update() {
     if (!this.player) {
       console.log("No hay nada");
     }
-
     // Animacion simple
     this.pos.y += Math.sin(this.time.get() * 5) * 0.02;
 
@@ -31,8 +41,42 @@ export class Key extends EngineObject {
     const d = this.pos.distanceSquared(this.player.pos);
     if (d < 0.3) {
       this.getKey = true;
+      this.sound.play(null, 1, 1, 1, false);
+      this.callParticle();
       this.destroy();
     }
+  }
+
+  callParticle() {
+    new ParticleEmitter(
+      this.pos, // Posición del emisor
+      0, // Ángulo de emisión
+      0.3, // Tamaño del área de emisión (ajustado para un área más pequeña)
+      0.3, // Tiempo de vida del emisor (emisión indefinida)
+      100, // Número de partículas por segundo
+      Math.PI, // Ángulo de emisión de partículas
+      0, // Sin textura de partículas (sin imagen)
+      randColor(), // Color de inicio (amarillo claro)
+      randColor(), // Color de fin (amarillo más claro)
+      randColor(), // Color de fin transparente
+      randColor(), // Color de fin transparente
+      0.2, // Tiempo de vida de las partículas
+      0.1, // Tamaño inicial de las partículas
+      0.3, // Tamaño final de las partículas
+      0.2, // Velocidad de las partículas
+      0.5, // Sin velocidad angular
+      0.9, // Amortiguamiento de la velocidad
+      1, // Sin amortiguamiento de la velocidad angular
+      0.05, // Sin gravedad
+      Math.PI * 2, // Ángulo de emisión de partículas
+      0.1, // Tasa de desvanecimiento
+      0.5, // Baja aleatoriedad para una apariencia uniforme
+      true, // No colisión con tiles
+      false, // No usar mezcla aditiva
+      false, // Sin colores aleatorios lineales
+      0, // Orden de renderizado
+      false // Espacio local
+    ).elasticity = 1;
   }
 }
 /**
@@ -43,14 +87,14 @@ export class Key extends EngineObject {
  * Door
  */
 export class Door extends EngineObject {
-  constructor(pos, key, id) {
+  constructor(pos, key, idObject) {
     super(pos, vec2(1), tile(3, 32, 0));
 
     this.setCollision();
     this.mass = 0;
     this.gravityScale = 0;
     this.key = key;
-    this.id = id;
+    this.id = idObject;
   }
 
   update() {

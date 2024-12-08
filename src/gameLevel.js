@@ -9,12 +9,17 @@ import {
   TileLayerData,
   setTileCollisionData,
   setGravity,
+  SoundWave,
 } from "littlejsengine";
 
-let levelSize, player, key;
+let levelSize, player;
+const keyMaps = new Map();
+const backgorundMusic = new SoundWave("/Audio/test1_littlejam.mp3");
 
 export function buildLevel() {
   setGravity(-0.3);
+  backgorundMusic.stop();
+  backgorundMusic.play(null, 0.8, 1, 1, true);
   loadLevel();
 }
 
@@ -24,37 +29,28 @@ const loadLevel = () => {
   initTileCollision(levelSize);
   engineObjectsDestroy();
 
+  /**
+   * Init Player
+   */
   player = new Player(vec2(1, 4), 5);
 
   /**
    * Add Objects
    */
+  // Keys
+  const keysCount = tileMapData.layers[3].objects;
+  CreateObjects(keysCount, "key");
 
-  const objectsCount = tileMapData.layers[3].objects;
-
-  objectsCount.map((objects) => {
-    const { x, y, type, properties } = objects;
-    const id = properties[0].value;
-    const tileId = properties[1].value;
-
-    const position = vec2(x / levelSize.x + 2.5, levelSize.y - y / 32 + 0.5);
-
-    if (type === "key") {
-      key = new Key(position, player, id, tileId);
-    }
-    if (type === "door") {
-      if (key) {
-        new Door(position, key, id);
-      }
-    }
-  });
+  // Doors
+  const doorsCount = tileMapData.layers[4].objects;
+  CreateObjects(doorsCount, "door");
 
   /**
    * Add Map
    */
   const layerCounts = tileMapData.layers.length;
   for (let layer = layerCounts; layer--; ) {
-    if (layer !== 3) {
+    if (layer < 3) {
       const layerData = tileMapData.layers[layer].data;
       const tileLayer = new TileLayer(vec2(), levelSize, tile(0, 32, 1));
       tileLayer.renderOrder = -1e3 + layer;
@@ -74,4 +70,32 @@ const loadLevel = () => {
       tileLayer.redraw();
     }
   }
+};
+
+const CreateObjects = (ArrObjects, type) => {
+  ArrObjects.forEach((objects) => {
+    const { x, y, properties } = objects;
+    const id = properties[0].value;
+    const tileId = properties[1].value;
+
+    const position = vec2(x / 32 + 0.5, levelSize.y - y / 32 + 0.5);
+
+    /**
+     * Key
+     */
+    if (type === "key") {
+      const key = new Key(position, player, id, tileId);
+      keyMaps.set(id, key);
+    }
+
+    /**
+     * Door
+     */
+    if (type === "door") {
+      const key = keyMaps.get(id);
+      if (key) {
+        new Door(position, key, id);
+      }
+    }
+  });
 };

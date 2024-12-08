@@ -1,0 +1,1 @@
+import { ParticleEmitter } from "littlejsengine";
