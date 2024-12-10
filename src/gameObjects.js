@@ -56,10 +56,10 @@ export class Key extends EngineObject {
       100, // Número de partículas por segundo
       Math.PI, // Ángulo de emisión de partículas
       0, // Sin textura de partículas (sin imagen)
-      randColor(), // Color de inicio (amarillo claro)
-      randColor(), // Color de fin (amarillo más claro)
-      randColor(), // Color de fin transparente
-      randColor(), // Color de fin transparente
+      randColor(), // Color random
+      randColor(), // Color random
+      randColor(), // Color random
+      randColor(), // Color random
       0.2, // Tiempo de vida de las partículas
       0.1, // Tamaño inicial de las partículas
       0.3, // Tamaño final de las partículas
