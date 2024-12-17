@@ -10,11 +10,11 @@ import {
 export class Player extends EngineObject {
     constructor(pos, {
         speed = 10, 
-        jumpForce = 5, 
+        jumpForce = 0.5, 
         maxJumps = 1, 
         wallJumpEnabled = true,
-        dashDistance = 3,
-        dashCooldown = 1
+        dashDistance = 10,
+        dashCooldown = 0.2
     } = {}) {
         super(pos, vec2(0.9), tile(2, 32, 0));
 

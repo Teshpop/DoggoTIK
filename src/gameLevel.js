@@ -17,7 +17,7 @@ const keyMaps = new Map();
 const backgorundMusic = new SoundWave("/Audio/test1_littlejam.mp3");
 
 export function buildLevel() {
-  setGravity(-0.3);
+  setGravity(-0.05);
   backgorundMusic.stop();
   backgorundMusic.play(null, 0.8, 1, 1, true);
   loadLevel();
