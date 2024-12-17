@@ -1,37 +1,35 @@
 'use strict';
 
-class Player extends Character {
+class Player extends GameObject {
     constructor(pos) {
-        super(pos);
+        super(pos, vec2(0.8, 0.9), 32); // Posición, tamaño, y valor de colisión básico
 
-        // Configuraciones adicionales
-        this.speed = 0.1;             // Velocidad de movimiento
-        this.dashSpeed = 0.4;         // Velocidad del dash
-        this.dashDuration = 0.2;      // Duración del dash
-        this.isDashing = false;       // Estado del dash
-        this.dashTimer = new Timer(); // Timer para el dash
-
-        this.extraJumps = 1;          // Saltos adicionales
+        // Configuraciones generales
+        this.speed = 0.1;              // Velocidad de movimiento
+        this.jumpStrength = 0.2;       // Fuerza de salto
+        this.extraJumps = 1;           // Saltos adicionales
         this.remainingJumps = this.extraJumps;
+        this.gravityScale = 1;         // Gravedad estándar
+        this.dashSpeed = 0.5;          // Velocidad del dash
+        this.dashDuration = 0.2;       // Duración del dash
+        this.isDashing = false;        // Estado de dash
 
-        // Control de ataques
+        // Timers
+        this.dashTimer = new Timer();
         this.attackCooldown = new Timer();
-        this.attackCooldownTime = 0.3; // Cooldown para ataques
-        this.attackDirection = vec2(1, 0); // Dirección predeterminada de ataque
+        this.attackCooldownTime = 0.3;
 
-        // Variables de interacción
-        this.interactTimer = new Timer();
-
-        // Estados
+        // Estados de ataques
+        this.attackDirection = vec2(1, 0); // Dirección de ataque
         this.isAttacking = false;
-        this.isInteracting = false;
 
-        // Entrada de usuario
+        // Variables de control de entrada
         this.keyInputs = {};
+        this.mirror = false; // Dirección de la mirada (false = derecha)
     }
 
     updateInput() {
-        // Captura de entradas
+        // Captura de entradas de teclado
         this.keyInputs.left = keyIsDown(65);   // A
         this.keyInputs.right = keyIsDown(68);  // D
         this.keyInputs.up = keyIsDown(87);     // W
@@ -45,29 +43,28 @@ class Player extends Character {
 
     handleMovement() {
         // Movimiento horizontal
-        this.moveInput.x = this.keyInputs.left ? -1 : this.keyInputs.right ? 1 : 0;
-
+        this.moveInput = vec2(0, 0);
         if (!this.isDashing) {
+            this.moveInput.x = this.keyInputs.left ? -1 : this.keyInputs.right ? 1 : 0;
             this.velocity.x = this.moveInput.x * this.speed;
+
+            // Actualiza la dirección en la que mira el personaje
+            if (this.moveInput.x) this.mirror = this.moveInput.x < 0;
         }
 
-        // Salto y salto en pared (reutiliza Character)
+        // Lógica de salto
         if (this.keyInputs.jump) {
-            if (this.groundTimer.active()) {
-                this.velocity.y = 0.15; // Salto desde el suelo
-                this.remainingJumps = this.extraJumps;
-            } else if (this.climbingWall) {
-                this.velocity.y = 0.25; // Salto en pared
-                this.velocity.x = -this.getMirrorSign() * this.speed;
-                this.remainingJumps = this.extraJumps;
+            if (this.isOnGround()) {
+                this.velocity.y = this.jumpStrength;
+                this.remainingJumps = this.extraJumps; // Restablece saltos adicionales
             } else if (this.remainingJumps > 0) {
-                this.velocity.y = 0.15; // Saltos adicionales
+                this.velocity.y = this.jumpStrength; // Salto adicional
                 this.remainingJumps--;
             }
         }
 
-        // Actualiza dirección de la mirada
-        if (this.moveInput.x) this.mirror = this.moveInput.x < 0;
+        // Aplica gravedad
+        this.velocity.y -= gravity * this.gravityScale;
     }
 
     handleDash() {
@@ -85,34 +82,34 @@ class Player extends Character {
     handleAttacks() {
         if (this.attackCooldown.active()) return;
 
-        if (this.keyInputs.attackLight || this.keyInputs.attackHeavy) {
-            // Determina dirección del ataque
+        let attackType = null;
+
+        if (this.keyInputs.attackLight) {
+            attackType = 'light';
+        } else if (this.keyInputs.attackHeavy) {
+            attackType = 'heavy';
+        }
+
+        if (attackType) {
+            // Determina la dirección del ataque
             if (this.keyInputs.up) this.attackDirection = vec2(0, -1); // Arriba
             else if (this.keyInputs.down) this.attackDirection = vec2(0, 1); // Abajo
             else this.attackDirection = vec2(this.mirror ? -1 : 1, 0); // Frente
 
-            const attackType = this.keyInputs.attackLight ? 'light' : 'heavy';
-            this.performAttack(this.attackDirection, attackType);
+            console.log(`Ataque ${attackType} en dirección (${this.attackDirection.x}, ${this.attackDirection.y})`);
+            this.attackCooldown.set(attackType === 'light' ? 0.3 : 0.7);
         }
-    }
-
-    performAttack(direction, type) {
-        // Reutiliza lógica de ataque existente (en Character)
-        console.log(`Ataque ${type} en dirección (${direction.x}, ${direction.y})`);
-
-        // Ajusta la dirección del arma (si es aplicable)
-        this.weapon.localAngle = Math.atan2(direction.y, direction.x);
-
-        // Temporizador para evitar ataques simultáneos
-        this.attackCooldown.set(type === 'light' ? 0.3 : 0.7);
     }
 
     handleInteraction() {
-        if (this.keyInputs.interact && !this.interactTimer.active()) {
+        if (this.keyInputs.interact) {
             console.log("Interacción realizada");
-            this.interactTimer.set(0.5); // Cooldown para la interacción
-            this.isInteracting = true;
         }
+    }
+
+    isOnGround() {
+        // Ejemplo básico para detectar suelo (ajustar con colisiones reales)
+        return this.pos.y <= 0;
     }
 
     update() {
@@ -122,11 +119,20 @@ class Player extends Character {
         this.handleAttacks();
         this.handleInteraction();
 
-        super.update(); // Actualiza físicas y colisiones
+        // Actualiza la posición con la velocidad actual
+        this.pos = this.pos.add(this.velocity);
+
+        // Limita la posición al suelo (simulación de colisión básica)
+        if (this.pos.y < 0) {
+            this.pos.y = 0;
+            this.velocity.y = 0;
+        }
+
+        super.update();
     }
 
     render() {
-        // Renderización del personaje
-        drawTile(this.pos, vec2(1), this.bodyTile, vec2(8), new Color(1, 1, 1), 0, this.mirror);
+        // Render del sprite del jugador
+        drawTile(this.pos, vec2(1), 5, vec2(8), new Color(1, 1, 1), 0, this.mirror);
     }
 }

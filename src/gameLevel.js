@@ -1,4 +1,4 @@
-import { Player } from "./game";
+import { Player } from "./character";
 import { Key, Door } from "./gameObjects";
 import {
   initTileCollision,
