@@ -10,18 +10,7 @@ import {
 
 import { buildLevel } from "./gameLevel";
 
-/**
- * Suelo Temporal
- */
-class floor extends EngineObject {
-  constructor(pos, size) {
-    super(pos, size);
 
-    this.setCollision();
-    this.mass = 0;
-    this.gravityScale = 0;
-  }
-}
 /**
  * ///////////////////////////
  */
