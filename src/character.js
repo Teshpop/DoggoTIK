@@ -77,6 +77,9 @@ export class Player extends EngineObject {
 
     // Camera tracking
     setCameraPos(this.pos);
+
+    // Kill player
+    this.kill();
   }
 
   handleJumping() {
@@ -144,7 +147,7 @@ export class Player extends EngineObject {
   }
 
   kill() {
-    if (this.life <= 0 || this.pos.y < -2) {
+    if (this.life <= 0 || this.pos.y < -4) {
       buildLevel();
       this.destroy();
       // Implement level reload or game over logic
