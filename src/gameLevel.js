@@ -10,6 +10,8 @@ import {
   setTileCollisionData,
   setGravity,
   SoundWave,
+  setCanvasFixedSize,
+  setCameraScale,
 } from "littlejsengine";
 
 let levelSize, player;
@@ -20,6 +22,8 @@ export function buildLevel() {
   setGravity(-0.05);
   backgorundMusic.stop();
   backgorundMusic.play(null, 0.8, 1, 1, true);
+  setCanvasFixedSize(vec2(800, 600));
+  setCameraScale(60);
   loadLevel();
 }
 

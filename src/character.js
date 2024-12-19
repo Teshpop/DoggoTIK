@@ -5,6 +5,7 @@ import {
   tile,
   setCameraPos,
   keyIsDown,
+  keyWasPressed,
 } from "littlejsengine";
 import { buildLevel } from "./gameLevel";
 
@@ -13,7 +14,7 @@ export class Player extends EngineObject {
     pos,
     {
       speed = 5.1,
-      jumpForce = 0.5,
+      jumpForce = 0.4,
       maxJumps = 1,
       wallJumpEnabled = true,
       dashDistance = 1,
@@ -96,7 +97,7 @@ export class Player extends EngineObject {
     }
     if(this.isAttacking)
     {
-      this.tileInfo = this.attackanim.frame(Math.floor(this.time.get()*10)%11);
+      this.tileInfo = this.attackanim.frame(Math.floor(this.time.get()*1)%11);
     }
 
     
@@ -187,7 +188,6 @@ export class Player extends EngineObject {
       // Dash in facing direction
       const dashMultiplier = this.isFacingRight ? 1 : -1;
       this.velocity.x = this.dashSpeed * dashMultiplier;
-      this.tileInfo = this.dashanim.frame(Math.floor(this.time.get() * 5) % 2);
     }
 
     // Apply dash velocity
@@ -206,26 +206,24 @@ export class Player extends EngineObject {
       }
     }
   }
-
   handleMeleeAttack() {
     if (!this.meleeCooldownTimer) {
       this.meleeCooldownTimer = new Timer();
       this.meleeCooldown = 1; // Duración del enfriamiento
+      this.attackDuration = 0.5; // Duración del ataque
+      this.attackTimer = new Timer();
     }
   
-    if (keyIsDown("KeyM") && this.meleeCooldownTimer.get() <= 0 && !this.isAttacking) {
+    if (keyWasPressed("KeyM") && this.meleeCooldownTimer.get() <= 0 && !this.isAttacking) {
       this.isAttacking = true;
       this.meleeCooldownTimer.set(this.meleeCooldown);
+      this.attackTimer.set(this.attackDuration);
   
       // Lógica del ataque cuerpo a cuerpo
-      forEachObject(this.pos, this.size, (o) => {
-        if (o.isCharacter && o.team != this.team && !o.isDead()) {
-          o.damage(this.damage, this);
-        }
-      });
+      // Aquí puedes agregar la lógica del ataque sin usar forEachObject
   
-    } else if (this.isAttacking && this.meleeCooldownTimer.get() > 0) {
-      if (this.meleeCooldownTimer.get() <= 0) {
+    } else if (this.isAttacking) {
+      if (this.attackTimer.get() <= 0) {
         this.isAttacking = false;
       }
     }
