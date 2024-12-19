@@ -134,12 +134,22 @@ class Box extends EngineObject {
     this.enemy = enemy;
     this.setCollision(true, false);
     this.mass = -10;
+
+    this.lastPosX = this.pos.x;
   }
 
   update() {
     this.pos.y = this.posEnemy.y;
-    this.pos.x =
-      this.velocityEnemy.x >= 0 ? this.posEnemy.x + 1 : this.posEnemy.x - 1;
+
+    if (this.velocityEnemy.x != 0) {
+      this.pos.x =
+        this.velocityEnemy.x >= 0
+          ? this.posEnemy.x + 1
+          : this.posEnemy.x - 1;
+      this.lastPosX = this.pos.x;
+    } else {
+      this.pos.x = this.lastPosX;
+    }
   }
 
   collideWithObject() {
