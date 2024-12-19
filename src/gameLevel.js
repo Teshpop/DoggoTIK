@@ -1,5 +1,5 @@
 import { Player } from "./character";
-import { Key, Door } from "./gameObjects";
+import { Key, Door, Enemy } from "./gameObjects";
 import {
   initTileCollision,
   vec2,
@@ -60,6 +60,13 @@ const loadLevel = () => {
           const pos = vec2(x, levelSize.y - 1 - y);
           const currentTile = layerData[y * levelSize.x + x];
           const tileData = new TileLayerData(currentTile - 1);
+
+          if (layer === 2) {
+            const objectPos = pos.add(vec2(0.5));
+            if (currentTile == 482) {
+              new Enemy(objectPos, player);
+            }
+          }
 
           tileLayer.setData(pos, tileData);
           if (currentTile > 0 && layer === 1) {
