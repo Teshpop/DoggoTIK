@@ -127,7 +127,7 @@ export class Trench extends EngineObject {
 
 class Box extends EngineObject {
   constructor(enemy) {
-    super(enemy.pos, vec2(0.9));
+    super(enemy.pos, vec2(0.9), tile(1000, 32, 0));
 
     this.posEnemy = enemy.pos;
     this.velocityEnemy = enemy.velocity;
