@@ -36,7 +36,7 @@ const loadLevel = () => {
   /**
    * Init Player
    */
-  player = new Player(vec2(1, 4), 5);
+  player = new Player(vec2(1.5, 4), 5);
 
   /**
    * Add Objects

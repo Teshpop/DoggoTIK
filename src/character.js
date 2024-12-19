@@ -41,7 +41,7 @@ export class Player extends EngineObject {
     this.wallJumpEnabled = wallJumpEnabled;
 
     // State tracking
-    this.life = 4;
+    this.life = 15;
     this.jumpsRemaining = maxJumps;
     this.isJumping = false;
     this.isTouchingWall = false;
@@ -70,43 +70,35 @@ export class Player extends EngineObject {
     this.damage = 1;
   }
 
-  render() { 
+  render() {
     super.render();
-    
+
     this.mirror = !this.isFacingRight;
     //solo si la velocidad es 0
-    if(this.velocity.x == 0 && this.velocity.y == 0)
-    {
-      this.tileInfo = this.idleanim.frame(Math.floor(this.time.get()*5)%18);
+    if (this.velocity.x == 0 && this.velocity.y == 0) {
+      this.tileInfo = this.idleanim.frame(Math.floor(this.time.get() * 5) % 18);
     }
-    if(this.velocity.x != 0)
-    {
-      this.tileInfo = this.runanim.frame(Math.floor(this.time.get()*5)%3);
+    if (this.velocity.x != 0) {
+      this.tileInfo = this.runanim.frame(Math.floor(this.time.get() * 5) % 3);
     }
-    if(this.velocity.y != 0)
-    {
-      this.tileInfo = this.jumpanim.frame(Math.floor(this.time.get()*5)%5);
+    if (this.velocity.y != 0) {
+      this.tileInfo = this.jumpanim.frame(Math.floor(this.time.get() * 5) % 5);
     }
-    if(this.isDashing)
-    {
-      this.tileInfo = this.dashanim.frame(Math.floor(this.time.get()*5)%17);
+    if (this.isDashing) {
+      this.tileInfo = this.dashanim.frame(Math.floor(this.time.get() * 5) % 17);
     }
-    if(this.life <= 0)
-    {
-      this.tileInfo = this.deathanim.frame(Math.floor(this.time.get()*5)%2);
+    if (this.life <= 0) {
+      this.tileInfo = this.deathanim.frame(Math.floor(this.time.get() * 5) % 2);
     }
-    if(this.isAttacking)
-    {
-      this.tileInfo = this.attackanim.frame(Math.floor(this.time.get()*1)%11);
+    if (this.isAttacking) {
+      this.tileInfo = this.attackanim.frame(
+        Math.floor(this.time.get() * 1) % 11
+      );
     }
-
-    
   }
 
   update() {
     super.update();
-
-
     // Delta time calculation
     this.deltaTime = this.time.get() - this.oldTime;
     this.oldTime = this.time.get();
@@ -130,7 +122,7 @@ export class Player extends EngineObject {
     setCameraPos(this.pos);
 
     // Melee attack mechanics
-    this.handleMeleeAttack();
+    // this.handleMeleeAttack();
 
     // Kill player
     this.kill();
@@ -139,7 +131,6 @@ export class Player extends EngineObject {
       const moveX = keyIsDown("KeyD") - keyIsDown("KeyA");
       this.velocity.x = moveX * this.speed * this.deltaTime;
     }
-    
   }
 
   handleJumping() {
@@ -206,27 +197,35 @@ export class Player extends EngineObject {
       }
     }
   }
-  handleMeleeAttack() {
-    if (!this.meleeCooldownTimer) {
-      this.meleeCooldownTimer = new Timer();
-      this.meleeCooldown = 1; // Duración del enfriamiento
-      this.attackDuration = 0.5; // Duración del ataque
-      this.attackTimer = new Timer();
-    }
-  
-    if (keyWasPressed("KeyM") && this.meleeCooldownTimer.get() <= 0 && !this.isAttacking) {
-      this.isAttacking = true;
-      this.meleeCooldownTimer.set(this.meleeCooldown);
-      this.attackTimer.set(this.attackDuration);
-  
-      // Lógica del ataque cuerpo a cuerpo
-      // Aquí puedes agregar la lógica del ataque sin usar forEachObject
-  
-    } else if (this.isAttacking) {
-      if (this.attackTimer.get() <= 0) {
-        this.isAttacking = false;
-      }
-    }
+  // handleMeleeAttack() {
+  //   if (!this.meleeCooldownTimer) {
+  //     this.meleeCooldownTimer = new Timer();
+  //     this.meleeCooldown = 1; // Duración del enfriamiento
+  //     this.attackDuration = 0.5; // Duración del ataque
+  //     this.attackTimer = new Timer();
+  //   }
+
+  //   if (keyWasPressed("KeyM") && this.meleeCooldownTimer.get() <= 0 && !this.isAttacking) {
+  //     this.isAttacking = true;
+  //     this.meleeCooldownTimer.set(this.meleeCooldown);
+  //     this.attackTimer.set(this.attackDuration);
+
+  //     // Lógica del ataque cuerpo a cuerpo
+  //     // Aquí puedes agregar la lógica del ataque sin usar forEachObject
+
+  //   } else if (this.isAttacking) {
+  //     if (this.attackTimer.get() <= 0) {
+  //       this.isAttacking = false;
+  //     }
+  //   }
+  // }
+
+  makeDamage() {
+    return this.damage;
+  }
+
+  ClickDamage() {
+    return keyWasPressed("KeyM");
   }
 
   checkWallContact() {

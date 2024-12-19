@@ -124,6 +124,30 @@ export class Trench extends EngineObject {
 /**
  * Enemy
  */
+
+class Box extends EngineObject {
+  constructor(enemy) {
+    super(enemy.pos, vec2(0.9));
+
+    this.posEnemy = enemy.pos;
+    this.velocityEnemy = enemy.velocity;
+    this.enemy = enemy;
+    this.setCollision(true, false);
+    this.mass = -10;
+  }
+
+  update() {
+    this.pos.y = this.posEnemy.y;
+    this.pos.x =
+      this.velocityEnemy.x >= 0 ? this.posEnemy.x + 1 : this.posEnemy.x - 1;
+  }
+
+  collideWithObject() {
+    super.collideWithObject();
+    this.enemy.playerAttack();
+  }
+}
+
 export class Enemy extends EngineObject {
   constructor(pos, player) {
     super(pos, vec2(0.9));
@@ -135,12 +159,14 @@ export class Enemy extends EngineObject {
 
     this.setCollision(true, true);
     this.damage = 2;
-    this.life = 4;
+    this.life = 2;
     this.player = player;
     this.isAttack = false;
 
     this.speed = 0.05;
     this.time = new Timer(0);
+
+    this.box = new Box(this);
   }
 
   render() {
@@ -176,6 +202,7 @@ export class Enemy extends EngineObject {
 
   update() {
     super.update();
+
     //Detection player
     const d = this.pos.distanceSquared(this.player.pos);
     // Verificar si el jugador está dentro del rango de detección
@@ -197,6 +224,21 @@ export class Enemy extends EngineObject {
       // Si el jugador está fuera de rango, detener al enemigo
       this.velocity.x = 0;
       this.velocity.y = 0;
+    }
+
+    this.kill();
+  }
+
+  playerAttack() {
+    // Get Damage
+    if (this.player.ClickDamage()) {
+      this.life -= this.player.makeDamage();
+    }
+  }
+
+  kill() {
+    if (this.life <= 0) {
+      this.destroy();
     }
   }
 
