@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Base.tsx",
+    "activeFile": "gameLeveData.js",
     "expandedProjectPaths": [
         "."
     ],
@@ -29,11 +29,11 @@
             "scaleInEditor": 1
         },
         "gameLeveData.js": {
-            "scale": 0.25,
-            "selectedLayer": 3,
+            "scale": 1,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 616,
-                "y": 1432
+                "x": 1801,
+                "y": 1845
             }
         }
     },
@@ -50,10 +50,10 @@
     "project": "MapData.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "Base.tsx",
+        "Objects.tsx",
         "RobotTile.tsx",
         "gameLeveData.js",
-        "Objects.tsx",
-        "Base.tsx",
         "MapDataLevel.js"
     ],
     "tileset.lastUsedFormat": "tsx",

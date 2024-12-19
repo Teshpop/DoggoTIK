@@ -125,39 +125,6 @@ export class Trench extends EngineObject {
  * Enemy
  */
 
-class Box extends EngineObject {
-  constructor(enemy) {
-    super(enemy.pos, vec2(0.9), tile(1000, 32, 0));
-
-    this.posEnemy = enemy.pos;
-    this.velocityEnemy = enemy.velocity;
-    this.enemy = enemy;
-    this.setCollision(true, false);
-    this.mass = -10;
-
-    this.lastPosX = this.pos.x;
-  }
-
-  update() {
-    this.pos.y = this.posEnemy.y;
-
-    if (this.velocityEnemy.x != 0) {
-      this.pos.x =
-        this.velocityEnemy.x >= 0
-          ? this.posEnemy.x + 1
-          : this.posEnemy.x - 1;
-      this.lastPosX = this.pos.x;
-    } else {
-      this.pos.x = this.lastPosX;
-    }
-  }
-
-  collideWithObject() {
-    super.collideWithObject();
-    this.enemy.playerAttack();
-  }
-}
-
 export class Enemy extends EngineObject {
   constructor(pos, player) {
     super(pos, vec2(0.9));
@@ -175,8 +142,6 @@ export class Enemy extends EngineObject {
 
     this.speed = 0.05;
     this.time = new Timer(0);
-
-    this.box = new Box(this);
   }
 
   render() {
@@ -229,6 +194,7 @@ export class Enemy extends EngineObject {
       if (d < 1) {
         this.velocity.x = 0;
         this.attack();
+        this.playerAttack();
       }
     } else {
       // Si el jugador está fuera de rango, detener al enemigo
