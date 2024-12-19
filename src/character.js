@@ -12,17 +12,26 @@ export class Player extends EngineObject {
   constructor(
     pos,
     {
-      speed = 10,
+      speed = 5.1,
       jumpForce = 0.5,
       maxJumps = 1,
       wallJumpEnabled = true,
-      dashDistance = 10,
-      dashCooldown = 0.2,
+      dashDistance = 1,
+      dashCooldown = 1,
+      dashSpeed = 1,
     } = {}
   ) {
-    super(pos, vec2(0.9), tile(3, 32, 2));
+    super(pos, vec2(0.9));
 
     this.setCollision();
+
+    this.idleanim = tile(0, 32, 2);
+    this.runanim = tile(288, 32, 2);
+    this.jumpanim = tile(224, 32, 2);
+    this.dashanim = tile(160, 32, 2);
+    this.deathanim = tile(192, 32, 2);
+    this.getDamageanim = tile(128, 32, 2);
+    this.attackanim = tile(96, 32, 2);
 
     // Movement parameters
     this.speed = speed;
@@ -40,6 +49,7 @@ export class Player extends EngineObject {
     // Dash mechanics
     this.dashDistance = dashDistance;
     this.dashCooldown = dashCooldown;
+    this.dashSpeed = dashSpeed; // Asignar la nueva propiedad
     this.canDash = true;
     this.isDashing = false;
     this.dashTimer = new Timer();
@@ -51,10 +61,50 @@ export class Player extends EngineObject {
     this.deltaTime = 0;
     this.jumpTimer = 0;
     this.maxJumpTimer = 0.1;
+
+    // Melee attack
+    this.isAttacking = false;
+
+    // Damage
+    this.damage = 1;
+  }
+
+  render() { 
+    super.render();
+    
+    this.mirror = !this.isFacingRight;
+    //solo si la velocidad es 0
+    if(this.velocity.x == 0 && this.velocity.y == 0)
+    {
+      this.tileInfo = this.idleanim.frame(Math.floor(this.time.get()*5)%18);
+    }
+    if(this.velocity.x != 0)
+    {
+      this.tileInfo = this.runanim.frame(Math.floor(this.time.get()*5)%3);
+    }
+    if(this.velocity.y != 0)
+    {
+      this.tileInfo = this.jumpanim.frame(Math.floor(this.time.get()*5)%5);
+    }
+    if(this.isDashing)
+    {
+      this.tileInfo = this.dashanim.frame(Math.floor(this.time.get()*5)%17);
+    }
+    if(this.life <= 0)
+    {
+      this.tileInfo = this.deathanim.frame(Math.floor(this.time.get()*5)%2);
+    }
+    if(this.isAttacking)
+    {
+      this.tileInfo = this.attackanim.frame(Math.floor(this.time.get()*10)%11);
+    }
+
+    
   }
 
   update() {
     super.update();
+
 
     // Delta time calculation
     this.deltaTime = this.time.get() - this.oldTime;
@@ -78,8 +128,17 @@ export class Player extends EngineObject {
     // Camera tracking
     setCameraPos(this.pos);
 
+    // Melee attack mechanics
+    this.handleMeleeAttack();
+
     // Kill player
     this.kill();
+
+    if (!this.isDashing) {
+      const moveX = keyIsDown("KeyD") - keyIsDown("KeyA");
+      this.velocity.x = moveX * this.speed * this.deltaTime;
+    }
+    
   }
 
   handleJumping() {
@@ -120,22 +179,54 @@ export class Player extends EngineObject {
   }
 
   handleDash() {
-    if (keyIsDown("ShiftLeft") && this.canDash) {
+    if (keyIsDown("ShiftLeft") && this.canDash && !this.isDashing) {
       this.isDashing = true;
       this.canDash = false;
-      this.dashTimer.set(this.dashCooldown);
+      this.dashTimer.set(this.dashDistance / this.dashSpeed);
 
       // Dash in facing direction
       const dashMultiplier = this.isFacingRight ? 1 : -1;
-      this.velocity.x = this.dashDistance * dashMultiplier;
-      this.velocity.y = 0; // Optional: can modify to add vertical dash component
+      this.velocity.x = this.dashSpeed * dashMultiplier;
+      this.tileInfo = this.dashanim.frame(Math.floor(this.time.get() * 5) % 2);
+    }
+
+    // Apply dash velocity
+    if (this.isDashing) {
+      if (this.dashTimer.get() <= 0) {
+        this.isDashing = false;
+        this.velocity.x = 0;
+        this.dashCooldownTimer = new Timer(this.dashCooldown);
+      }
     }
 
     // Dash cooldown
-    if (!this.canDash) {
-      if (this.dashTimer.get() >= this.dashCooldown) {
+    if (!this.canDash && this.dashCooldownTimer) {
+      if (this.dashCooldownTimer.get() <= 0) {
         this.canDash = true;
-        this.isDashing = false;
+      }
+    }
+  }
+
+  handleMeleeAttack() {
+    if (!this.meleeCooldownTimer) {
+      this.meleeCooldownTimer = new Timer();
+      this.meleeCooldown = 1; // Duración del enfriamiento
+    }
+  
+    if (keyIsDown("KeyM") && this.meleeCooldownTimer.get() <= 0 && !this.isAttacking) {
+      this.isAttacking = true;
+      this.meleeCooldownTimer.set(this.meleeCooldown);
+  
+      // Lógica del ataque cuerpo a cuerpo
+      forEachObject(this.pos, this.size, (o) => {
+        if (o.isCharacter && o.team != this.team && !o.isDead()) {
+          o.damage(this.damage, this);
+        }
+      });
+  
+    } else if (this.isAttacking && this.meleeCooldownTimer.get() > 0) {
+      if (this.meleeCooldownTimer.get() <= 0) {
+        this.isAttacking = false;
       }
     }
   }
