@@ -247,7 +247,7 @@ export class Enemy extends EngineObject {
   }
 
   kill() {
-    if (this.life <= 0) {
+    if (this.life <= 0 || this.pos.y < -3) {
       this.destroy();
     }
   }
