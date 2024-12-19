@@ -1,12 +1,4 @@
-import {
-  engineInit,
-  EngineObject,
-  keyIsDown,
-  Timer,
-  vec2,
-  tile,
-  setCameraPos,
-} from "littlejsengine";
+import { engineInit } from "littlejsengine";
 
 import { buildLevel } from "./gameLevel";
 
