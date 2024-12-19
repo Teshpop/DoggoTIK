@@ -43,4 +43,5 @@ engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, gameRenderPost, [
   "RobotDoors.png",
   "MapTiles.png",
   "Perrito_tittle_shell.png",
+  "Robot_Tiles.png",
 ]);

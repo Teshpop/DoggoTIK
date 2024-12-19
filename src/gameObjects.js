@@ -126,15 +126,52 @@ export class Trench extends EngineObject {
  */
 export class Enemy extends EngineObject {
   constructor(pos, player) {
-    super(pos, vec2(1));
+    super(pos, vec2(0.9));
+
+    this.walkAnim = tile(64, 32, 3);
+    this.idleAnim = tile(0, 32, 3);
+    this.detectedPlayer = tile(128, 32, 3);
+    this.attackAnim = tile(32, 32, 3);
 
     this.setCollision(true, true);
     this.damage = 2;
     this.life = 4;
     this.player = player;
+    this.isAttack = false;
 
-    this.speed = 0.08;
+    this.speed = 0.05;
     this.time = new Timer(0);
+  }
+
+  render() {
+    super.render();
+
+    if (this.velocity.x != 0) {
+      this.tileInfo = this.walkAnimation();
+      this.mirror = this.velocity.x >= 0;
+    } else if (this.velocity.x === 0 || this.velocity.y === 0) {
+      this.tileInfo = this.idleAnimation();
+    }
+
+    if (this.isAttack) {
+      this.tileInfo = this.attackAnimation();
+    }
+  }
+
+  walkAnimation() {
+    return this.walkAnim.frame(Math.floor(this.time.get() * 20) % 12);
+  }
+
+  idleAnimation() {
+    return this.idleAnim.frame(Math.floor(this.time.get() * 15) % 20);
+  }
+
+  detectedAnimation() {
+    return this.detectedPlayer.frame(Math.floor(this.time.get() * 10) % 11);
+  }
+
+  attackAnimation() {
+    return this.attackAnim.frame(Math.floor(this.time.get() * 4.5) % 4);
   }
 
   update() {
@@ -142,7 +179,7 @@ export class Enemy extends EngineObject {
     //Detection player
     const d = this.pos.distanceSquared(this.player.pos);
     // Verificar si el jugador está dentro del rango de detección
-    if (d < 30) {
+    if (d < 20) {
       // Calcular la diferencia en las posiciones
       const dx = this.player.pos.x - this.pos.x;
 
@@ -152,7 +189,7 @@ export class Enemy extends EngineObject {
 
       // Ajustar la velocidad del enemigo
       this.velocity.x = dirX * this.speed;
-      if (d < 1.5) {
+      if (d < 1) {
         this.velocity.x = 0;
         this.attack();
       }
@@ -165,6 +202,8 @@ export class Enemy extends EngineObject {
 
   attack() {
     if (this.time.get() > 1.5) {
+      this.isAttack = true;
+      console.log("Ataque");
       this.time.set(0);
       this.player.getDamage(this.damage);
     }
