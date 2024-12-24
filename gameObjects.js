@@ -1,19 +1,7 @@
-// import { InteractableObjects } from "./InteractableObjects";
-import {
-  vec2,
-  EngineObject,
-  Timer,
-  tile,
-  SoundWave,
-  ParticleEmitter,
-  rgb,
-  randColor,
-} from "littlejsengine";
-
 /**
  * Key
  */
-export class Key extends EngineObject {
+class Key extends EngineObject {
   constructor(pos, player, idObject, tileid) {
     super(pos, vec2(1), tile(tileid, 32, 0));
 
@@ -26,7 +14,7 @@ export class Key extends EngineObject {
     this.time.set(0);
     this.getKey = false;
     this.id = idObject;
-    this.sound = new SoundWave("/Audio/test_Sound.wav");
+    this.sound = new SoundWave("./Audio/test_Sound.wav");
     this.sound.setVolume(1);
   }
 
@@ -39,7 +27,7 @@ export class Key extends EngineObject {
 
     // verificar distancia
     const d = this.pos.distanceSquared(this.player.pos);
-    if (d < 0.3) {
+    if (d < 0.5) {
       this.getKey = true;
       this.sound.play(null, 1, 1, 1, false);
       this.callParticle();
@@ -86,7 +74,7 @@ export class Key extends EngineObject {
 /**
  * Door
  */
-export class Door extends EngineObject {
+class Door extends EngineObject {
   constructor(pos, key, idObject) {
     super(pos, vec2(1), tile(3, 32, 0));
 
@@ -100,7 +88,6 @@ export class Door extends EngineObject {
   update() {
     super.update();
     if (this.key.getKey && this.key.id === this.id) {
-      console.log("Se elimino la puerta");
       this.destroy();
     }
   }
@@ -112,7 +99,7 @@ export class Door extends EngineObject {
 /**
  * Trench
  */
-export class Trench extends EngineObject {
+class Trench extends EngineObject {
   constructor(pos) {
     super(pos, vec2(1));
   }
@@ -122,111 +109,79 @@ export class Trench extends EngineObject {
  */
 
 /**
- * Enemy
+ * Save Points
  */
-
-export class Enemy extends EngineObject {
+class CheckPoint extends EngineObject {
   constructor(pos, player) {
-    super(pos, vec2(0.9));
+    super(pos, vec2(1));
 
-    this.walkAnim = tile(64, 32, 3);
-    this.idleAnim = tile(0, 32, 3);
-    this.detectedPlayer = tile(128, 32, 3);
-    this.attackAnim = tile(32, 32, 3);
-
-    this.setCollision(true, true);
-    this.damage = 2;
-    this.life = 2;
+    this.setCollision(false, false);
     this.player = player;
-    this.isAttack = false;
-
-    this.speed = 0.05;
-    this.time = new Timer(0);
+    this.pos = pos;
+    this.getFlag = false;
   }
 
   render() {
     super.render();
 
-    if (this.velocity.x != 0) {
-      this.tileInfo = this.walkAnimation();
-      this.mirror = this.velocity.x >= 0;
-    } else if (this.velocity.x === 0 || this.velocity.y === 0) {
-      this.tileInfo = this.idleAnimation();
+    if (!this.getFlag) {
+      this.tileInfo = tile(1, 32, 6).frame(Math.floor(time * 12) % 6);
+    } else {
+      this.tileInfo = tile(0, 32, 6);
     }
-
-    if (this.isAttack) {
-      this.tileInfo = this.attackAnimation();
-    }
-  }
-
-  walkAnimation() {
-    return this.walkAnim.frame(Math.floor(this.time.get() * 20) % 12);
-  }
-
-  idleAnimation() {
-    return this.idleAnim.frame(Math.floor(this.time.get() * 15) % 20);
-  }
-
-  detectedAnimation() {
-    return this.detectedPlayer.frame(Math.floor(this.time.get() * 10) % 11);
-  }
-
-  attackAnimation() {
-    return this.attackAnim.frame(Math.floor(this.time.get() * 4.5) % 4);
   }
 
   update() {
     super.update();
 
-    //Detection player
     const d = this.pos.distanceSquared(this.player.pos);
-    // Verificar si el jugador está dentro del rango de detección
-    if (d < 20) {
-      // Calcular la diferencia en las posiciones
-      const dx = this.player.pos.x - this.pos.x;
+    if (d < 0.5) {
+      this.getFlag = true;
+    }
 
-      // Normalizar el vector de dirección
-      const length = Math.sqrt(dx * dx);
-      const dirX = dx / length;
-
-      // Ajustar la velocidad del enemigo
-      this.velocity.x = dirX * this.speed;
-      if (d < 1) {
-        this.velocity.x = 0;
-        this.attack();
-        this.playerAttack();
+    if (this.getFlag) {
+      if (this.player.pos.y <= -3 || this.player.healt <= 0) {
+        this.player.pos.x = this.pos.x;
+        this.player.pos.y = this.pos.y + 0.5;
+        this.player.lifes--;
       }
     } else {
-      // Si el jugador está fuera de rango, detener al enemigo
-      this.velocity.x = 0;
-      this.velocity.y = 0;
-    }
-
-    this.kill();
-  }
-
-  playerAttack() {
-    // Get Damage
-    if (this.player.ClickDamage()) {
-      this.life -= this.player.makeDamage();
-    }
-  }
-
-  kill() {
-    if (this.life <= 0 || this.pos.y < -3) {
-      this.destroy();
-    }
-  }
-
-  attack() {
-    if (this.time.get() > 1.5) {
-      this.isAttack = true;
-      console.log("Ataque");
-      this.time.set(0);
-      this.player.getDamage(this.damage);
+      if (this.player.pos.y <= -3) {
+        this.player.pos = vec2(1.5, 4);
+        this.player.lifes--;
+      }
     }
   }
 }
+
 /**
- * /////////////////////////////////////////////////
+ * Dog
  */
+class Dog extends EngineObject {
+  constructor(pos, player) {
+    super(pos, vec2(0.6));
+
+    this.setCollision(false, false);
+
+    this.saveDog = false;
+    this.player = player;
+  }
+
+  render() {
+    super.render();
+
+    this.tileInfo = tile(0, 32, 2);
+  }
+
+  update() {
+    super.update();
+    if (this.saveDog) {
+      buildLevel();
+    }
+
+    const d = this.pos.distanceSquared(this.player.pos);
+    if (d < 0.5) {
+      this.saveDog = true;
+    }
+  }
+}
